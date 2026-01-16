@@ -4,16 +4,40 @@ import random
 import vk_api as vk
 from vk_api.longpoll import VkLongPoll, VkEventType
 from dotenv import load_dotenv
+from google.cloud import dialogflow_v2 as dialogflow
 
 
 load_dotenv()
 
+PROJECT_ID = os.getenv("DIALOGFLOW_PROJECT_ID")
 
-def echo(event, vk_api):
+
+def detect_intent_text(session_id: str, text: str, language_code: str = "ru") -> str:
+    session_client = dialogflow.SessionsClient()
+    session = session_client.session_path(PROJECT_ID, session_id)
+
+    text_input = dialogflow.TextInput(text=text, language_code=language_code)
+    query_input = dialogflow.QueryInput(text=text_input)
+
+    response = session_client.detect_intent(
+        request={"session": session, "query_input": query_input}
+    )
+
+    return response.query_result.fulfillment_text
+
+
+def handle_message(event, vk_api):
+    user_text = event.text
+    session_id = str(event.user_id)
+
+    reply = detect_intent_text(session_id, user_text, language_code="ru")
+    if not reply:
+        reply = "Я пока не знаю, что ответить"
+
     vk_api.messages.send(
         user_id=event.user_id,
-        message=event.text,
-        random_id=random.randint(1,1000)
+        message=reply,
+        random_id=random.randint(1, 1_000_000),
     )
 
 
@@ -23,4 +47,4 @@ if __name__ == "__main__":
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-            echo(event, vk_api)
+            handle_message(event, vk_api)
