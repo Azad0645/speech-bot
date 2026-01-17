@@ -23,16 +23,21 @@ def detect_intent_text(session_id: str, text: str, language_code: str = "ru") ->
         request={"session": session, "query_input": query_input}
     )
 
-    return response.query_result.fulfillment_text
+    result = response.query_result
+    fulfillment_text = result.fulfillment_text
+    is_fallback = result.intent.is_fallback
+
+    return fulfillment_text, is_fallback
 
 
 def handle_message(event, vk_api):
     user_text = event.text
     session_id = str(event.user_id)
 
-    reply = detect_intent_text(session_id, user_text, language_code="ru")
-    if not reply:
-        reply = "Я пока не знаю, что ответить"
+    reply, is_fallback = detect_intent_text(session_id, user_text, language_code="ru")
+
+    if is_fallback or not reply.strip():
+        return
 
     vk_api.messages.send(
         user_id=event.user_id,
