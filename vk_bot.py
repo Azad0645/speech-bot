@@ -4,37 +4,16 @@ import random
 import vk_api as vk
 from vk_api.longpoll import VkLongPoll, VkEventType
 from dotenv import load_dotenv
-from google.cloud import dialogflow_v2 as dialogflow
-
-
-def detect_intent_text(
-    project_id: str,
-    session_id: str,
-    text: str,
-    language_code: str = "ru",
-) -> tuple[str, bool]:
-    session_client = dialogflow.SessionsClient()
-    session = session_client.session_path(project_id, session_id)
-
-    text_input = dialogflow.TextInput(text=text, language_code=language_code)
-    query_input = dialogflow.QueryInput(text=text_input)
-
-    response = session_client.detect_intent(
-        request={"session": session, "query_input": query_input}
-    )
-
-    result = response.query_result
-    fulfillment_text = result.fulfillment_text
-    is_fallback = result.intent.is_fallback
-
-    return fulfillment_text, is_fallback
+from dialogflow_client import detect_intent
 
 
 def handle_message(event, vk_api, project_id: str):
     user_text = event.text
     session_id = str(event.user_id)
 
-    reply, is_fallback = detect_intent_text(project_id, session_id, user_text, language_code="ru")
+    result = detect_intent(project_id, session_id, user_text, "ru")
+    reply = result.fulfillment_text
+    is_fallback = result.intent.is_fallback
 
     if is_fallback or not reply.strip():
         return

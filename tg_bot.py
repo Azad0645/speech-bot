@@ -1,10 +1,11 @@
 import os
 import logging
 from dotenv import load_dotenv
-from google.cloud import dialogflow_v2 as dialogflow
 
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+
+from dialogflow_client import detect_intent
 
 
 logging.basicConfig(
@@ -20,20 +21,6 @@ def main() -> None:
 
     project_id = os.getenv("DIALOGFLOW_PROJECT_ID")
     tg_token = os.getenv("TG_TOKEN")
-
-
-    def detect_intent_text(session_id: str, text: str, language_code: str = "ru") -> str:
-        session_client = dialogflow.SessionsClient()
-        session = session_client.session_path(project_id, session_id)
-
-        text_input = dialogflow.TextInput(text=text, language_code=language_code)
-        query_input = dialogflow.QueryInput(text=text_input)
-
-        response = session_client.detect_intent(
-            request={"session": session, "query_input": query_input}
-        )
-
-        return response.query_result.fulfillment_text
 
 
     def start(update: Update, context: CallbackContext) -> None:
@@ -55,7 +42,8 @@ def main() -> None:
         user_text = update.message.text
         session_id = str(update.effective_user.id)
 
-        reply = detect_intent_text(session_id, user_text, language_code="ru")
+        result = detect_intent(project_id, session_id, user_text, "ru")
+        reply = result.fulfillment_text
 
         if not reply:
             reply = "Я пока не знаю, что ответить"
