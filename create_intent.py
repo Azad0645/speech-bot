@@ -3,10 +3,6 @@ from dotenv import load_dotenv
 import os
 import json
 
-load_dotenv()
-
-PROJECT_ID = os.getenv("DIALOGFLOW_PROJECT_ID")
-
 
 def create_intent(project_id, display_name, training_phrases, message_texts):
     intents_client = dialogflow.IntentsClient()
@@ -34,6 +30,10 @@ def create_intent(project_id, display_name, training_phrases, message_texts):
 
 
 if __name__ == "__main__":
+    load_dotenv()
+
+    PROJECT_ID = os.getenv("DIALOGFLOW_PROJECT_ID")
+
     with open("questions.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 

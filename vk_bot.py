@@ -7,11 +7,6 @@ from dotenv import load_dotenv
 from google.cloud import dialogflow_v2 as dialogflow
 
 
-load_dotenv()
-
-PROJECT_ID = os.getenv("DIALOGFLOW_PROJECT_ID")
-
-
 def detect_intent_text(session_id: str, text: str, language_code: str = "ru") -> str:
     session_client = dialogflow.SessionsClient()
     session = session_client.session_path(PROJECT_ID, session_id)
@@ -47,6 +42,10 @@ def handle_message(event, vk_api):
 
 
 if __name__ == "__main__":
+    load_dotenv()
+
+    PROJECT_ID = os.getenv("DIALOGFLOW_PROJECT_ID")
+
     vk_session = vk.VkApi(token=os.getenv('VK_TOKEN'))
     vk_api = vk_session.get_api()
     longpoll = VkLongPoll(vk_session)
