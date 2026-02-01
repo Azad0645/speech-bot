@@ -2,6 +2,7 @@ from google.cloud import dialogflow_v2 as dialogflow
 from dotenv import load_dotenv
 import os
 import json
+import argparse
 
 
 def create_intent(project_id, display_name, training_phrases, message_texts):
@@ -26,19 +27,36 @@ def create_intent(project_id, display_name, training_phrases, message_texts):
     response = intents_client.create_intent(
         request={"parent": parent, "intent": intent}
     )
-    print(f"Intent created: {response.display_name}")
+    return response
+
+
+def main():
+    load_dotenv()
+
+    project_id = os.getenv("DIALOGFLOW_PROJECT_ID")
+
+    parser = argparse.ArgumentParser(
+        description="Create Dialogflow intents from questions.json-like file"
+    )
+    parser.add_argument(
+        "--questions-path",
+        "-q",
+        default="questions.json",
+        help="Путь к JSON-файлу с вопросами и ответами (по умолчанию questions.json)",
+    )
+    args = parser.parse_args()
+    questions_path = args.questions_path
+
+    with open(questions_path, "r", encoding="utf-8") as f:
+        intents_data = json.load(f)
+
+    for intent_name, intent_config in intents_data.items():
+        questions = intent_config.get("questions", [])
+        answer = intent_config.get("answer", "")
+
+        response = create_intent(project_id, intent_name, questions, [answer])
+        print(f"Intent created: {response.display_name}")
 
 
 if __name__ == "__main__":
-    load_dotenv()
-
-    PROJECT_ID = os.getenv("DIALOGFLOW_PROJECT_ID")
-
-    with open("questions.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    for display_name, block in data.items():
-        questions = block.get("questions", [])
-        answer = block.get("answer", "")
-
-        create_intent(PROJECT_ID, display_name, questions, [answer])
+    main()
