@@ -7,9 +7,14 @@ from dotenv import load_dotenv
 from google.cloud import dialogflow_v2 as dialogflow
 
 
-def detect_intent_text(session_id: str, text: str, language_code: str = "ru") -> str:
+def detect_intent_text(
+    project_id: str,
+    session_id: str,
+    text: str,
+    language_code: str = "ru",
+) -> tuple[str, bool]:
     session_client = dialogflow.SessionsClient()
-    session = session_client.session_path(PROJECT_ID, session_id)
+    session = session_client.session_path(project_id, session_id)
 
     text_input = dialogflow.TextInput(text=text, language_code=language_code)
     query_input = dialogflow.QueryInput(text=text_input)
@@ -25,11 +30,11 @@ def detect_intent_text(session_id: str, text: str, language_code: str = "ru") ->
     return fulfillment_text, is_fallback
 
 
-def handle_message(event, vk_api):
+def handle_message(event, vk_api, project_id: str):
     user_text = event.text
     session_id = str(event.user_id)
 
-    reply, is_fallback = detect_intent_text(session_id, user_text, language_code="ru")
+    reply, is_fallback = detect_intent_text(project_id, session_id, user_text, language_code="ru")
 
     if is_fallback or not reply.strip():
         return
@@ -41,14 +46,18 @@ def handle_message(event, vk_api):
     )
 
 
-if __name__ == "__main__":
+def main():
     load_dotenv()
 
-    PROJECT_ID = os.getenv("DIALOGFLOW_PROJECT_ID")
+    project_id = os.getenv("DIALOGFLOW_PROJECT_ID")
 
     vk_session = vk.VkApi(token=os.getenv('VK_TOKEN'))
     vk_api = vk_session.get_api()
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-            handle_message(event, vk_api)
+            handle_message(event, vk_api, project_id)
+
+
+if __name__ == "__main__":
+    main()
