@@ -8,16 +8,18 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 from dialogflow_client import detect_intent
 
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
-
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__file__)
 
 
 def main() -> None:
     """Start the bot."""
     load_dotenv()
+
+    logging.basicConfig(
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        level=logging.ERROR,
+    )
+    logger.setLevel(logging.INFO)
 
     project_id = os.getenv("DIALOGFLOW_PROJECT_ID")
     tg_token = os.getenv("TG_TOKEN")
@@ -37,8 +39,7 @@ def main() -> None:
         update.message.reply_text('Help!')
 
 
-    def echo(update: Update, context: CallbackContext) -> None:
-        """Echo the user message."""
+    def handle_message(update: Update, context: CallbackContext) -> None:
         user_text = update.message.text
         session_id = str(update.effective_user.id)
 
@@ -58,7 +59,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
 
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
 
     updater.start_polling()
 
