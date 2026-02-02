@@ -21,8 +21,8 @@ def main() -> None:
     )
     logger.setLevel(logging.INFO)
 
-    project_id = os.getenv("DIALOGFLOW_PROJECT_ID")
-    tg_token = os.getenv("TG_TOKEN")
+    project_id = os.environ["DIALOGFLOW_PROJECT_ID"]
+    tg_token = os.environ["TG_TOKEN"]
 
 
     def start(update: Update, context: CallbackContext) -> None:

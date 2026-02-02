@@ -33,7 +33,7 @@ def create_intent(project_id, display_name, training_phrases, message_texts):
 def main():
     load_dotenv()
 
-    project_id = os.getenv("DIALOGFLOW_PROJECT_ID")
+    project_id = os.environ["DIALOGFLOW_PROJECT_ID"]
 
     parser = argparse.ArgumentParser(
         description="Create Dialogflow intents from questions.json-like file"

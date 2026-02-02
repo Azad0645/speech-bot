@@ -29,9 +29,9 @@ def handle_message(event, vk_api, project_id: str):
 def main():
     load_dotenv()
 
-    project_id = os.getenv("DIALOGFLOW_PROJECT_ID")
+    project_id = os.environ["DIALOGFLOW_PROJECT_ID"]
 
-    vk_session = vk.VkApi(token=os.getenv('VK_TOKEN'))
+    vk_session = vk.VkApi(token=os.environ["VK_TOKEN"])
     vk_api = vk_session.get_api()
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
