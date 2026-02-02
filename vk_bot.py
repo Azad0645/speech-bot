@@ -9,7 +9,8 @@ from dialogflow_client import detect_intent
 
 def handle_message(event, vk_api, project_id: str):
     user_text = event.text
-    session_id = str(event.user_id)
+    vk_user_id = event.user_id
+    session_id = f"vk-{vk_user_id}"
 
     result = detect_intent(project_id, session_id, user_text, "ru")
     reply = result.fulfillment_text

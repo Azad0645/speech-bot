@@ -41,7 +41,8 @@ def main() -> None:
 
     def handle_message(update: Update, context: CallbackContext) -> None:
         user_text = update.message.text
-        session_id = str(update.effective_user.id)
+        tg_user_id = update.effective_user.id
+        session_id = f"tg-{tg_user_id}"
 
         result = detect_intent(project_id, session_id, user_text, "ru")
         reply = result.fulfillment_text
